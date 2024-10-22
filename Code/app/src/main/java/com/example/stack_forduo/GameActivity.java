@@ -61,6 +61,7 @@ public class GameActivity extends AppCompatActivity {
     public void gameOver() {
         Intent intent = new Intent(GameActivity.this, GameOverActivity.class);
 
+        // 승자와 각 플레이어의 점수를 가져옴
         intent.putExtra("WINNER", player1.getScore() > player2.getScore() ? player1.getName() : player2.getName());
         intent.putExtra("PLAYER1_SCORE", player1.getScore());
         intent.putExtra("PLAYER2_SCORE", player2.getScore());
@@ -72,19 +73,20 @@ public class GameActivity extends AppCompatActivity {
 
         private Paint blockPaint;
         private int screenWidth, screenHeight;
-        private final int blockWidth = 150; // 가로 길이 150
-        private final int blockHeight = 50; // 세로 길이 50
+        private final int blockWidth = 150;
+        private final int blockHeight = 50;
         private int blockX, blockY;
         private boolean blockMovingRight = true;
         private int blockSpeed = 10;
 
         // 각 블록의 X 좌표와 색상 정보를 저장하는 리스트
         private final List<BlockInfo> blocks = new ArrayList<>();
-        private int towerHeight = 0; // 탑 높이
+        private int towerHeight = 0;
         private Player player;
         private EditText scoreView;
         private GameActivity gameActivity;
-        private final Random random = new Random();
+       
+        private final Random random = new Random();    // 블록 색상 랜덤하게 뽑기 위해서
         private final int[] blockColors = {Color.parseColor("#2B4C40"), Color.parseColor("#547734"), Color.parseColor("#485726"), Color.parseColor("#8C924F")};
 
         public GameView(Context context, Player player, EditText scoreView) {
@@ -170,13 +172,14 @@ public class GameActivity extends AppCompatActivity {
                 updateBlockColor();
 
                 if (towerHeight * blockHeight > screenHeight / 4) {
-                    blocks.remove(0);  // 가장 아래 블록 삭제
-                    towerHeight--;      // 탑의 높이 감소
+                    blocks.remove(0);
+                    towerHeight--;
                 }
             }
             return true;
         }
-
+        
+        // 블록 색상을 랜덤으로 업데이트 해주는 매서드
         private void updateBlockColor() {
             int randomColor = blockColors[random.nextInt(blockColors.length)];
             blockPaint.setColor(randomColor);
