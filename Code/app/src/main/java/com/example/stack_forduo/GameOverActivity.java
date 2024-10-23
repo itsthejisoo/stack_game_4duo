@@ -29,22 +29,7 @@ public class GameOverActivity extends AppCompatActivity {
         player2ScoreView.setText("Player 2 Score: " + player2Score);
 
         Button playAgainButton = (Button) findViewById(R.id.playagain);
-        playAgainButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(GameOverActivity.this, GameActivity.class);
-                startActivity(intent);
-            }
-        });
-
         Button quitButton = (Button) findViewById(R.id.quitButton);
-        playAgainButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(GameOverActivity.this, MainActivity.class);
-                startActivity(intent);
-            }
-        });
 
         // 스크린 전체화면 설정(appbar, homebar 숨기기)
         getWindow().getDecorView().setSystemUiVisibility(
@@ -55,5 +40,15 @@ public class GameOverActivity extends AppCompatActivity {
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         );
+    }
+
+    public void onClickPlayAgain(View v) {
+        Intent intent = new Intent(GameOverActivity.this, GameActivity.class);
+        startActivity(intent);
+    }
+
+    public void onClickQuit(View v) {
+        Intent intent = new Intent(GameOverActivity.this, MainActivity.class);
+        startActivity(intent);
     }
 }
