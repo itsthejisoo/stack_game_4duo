@@ -85,7 +85,7 @@ public class GameActivity extends AppCompatActivity {
         private Player player;
         private EditText scoreView;
         private GameActivity gameActivity;
-       
+
         private final Random random = new Random();    // 블록 색상 랜덤하게 뽑기 위해서
         private final int[] blockColors = {Color.parseColor("#2B4C40"), Color.parseColor("#547734"), Color.parseColor("#485726"), Color.parseColor("#8C924F")};
 
@@ -164,7 +164,7 @@ public class GameActivity extends AppCompatActivity {
                 if (towerHeight == 10) {
                     blockSpeed = 11;
                 }
-                if (towerHeight % 20 == 0) {
+                if (towerHeight % 10 == 0) {
                     blockSpeed += 1;
                 }
 
@@ -178,7 +178,7 @@ public class GameActivity extends AppCompatActivity {
             }
             return true;
         }
-        
+
         // 블록 색상을 랜덤으로 업데이트 해주는 매서드
         private void updateBlockColor() {
             int randomColor = blockColors[random.nextInt(blockColors.length)];

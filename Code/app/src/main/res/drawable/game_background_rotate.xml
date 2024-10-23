@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rotate xmlns:android="http://schemas.android.com/apk/res/android"
-    android:fromDegrees="180"
-    android:toDegrees="0"
-    android:pivotX="50%"
-    android:pivotY="50%">
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
 
-    <bitmap android:src="@drawable/game_background" />
-</rotate>
+    <gradient xmlns:android="http://schemas.android.com/apk/res/android"
+        android:startColor="#C1B6A3"
+        android:endColor="#F5F5EB"
+        android:angle="90" />
+</shape>

@@ -1,7 +1,9 @@
 package com.example.stack_forduo;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,6 +27,24 @@ public class GameOverActivity extends AppCompatActivity {
 
         player1ScoreView.setText("Player 1 Score: " + player1Score);
         player2ScoreView.setText("Player 2 Score: " + player2Score);
+
+        Button playAgainButton = (Button) findViewById(R.id.playagain);
+        playAgainButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(GameOverActivity.this, GameActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        Button quitButton = (Button) findViewById(R.id.quitButton);
+        playAgainButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(GameOverActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
 
         // 스크린 전체화면 설정(appbar, homebar 숨기기)
         getWindow().getDecorView().setSystemUiVisibility(

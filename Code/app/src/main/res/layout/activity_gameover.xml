@@ -74,5 +74,39 @@
         android:padding="10dp">
     </TextView>
 
+    <Button
+        android:id="@+id/playagain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/pretendardnormal"
+        android:textSize="20dp"
+        android:textColor="#222222"
+        android:textFontWeight="800"
+        android:gravity="center"
+        android:text="PLAY AGAIN"
+        android:background="@drawable/radius_white"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="bottom"
+        android:onClick="onClickPlus">
+    </Button>
+
+    <Button
+        android:id="@+id/quitButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/pretendardnormal"
+        android:textSize="20dp"
+        android:textColor="#ffffff"
+        android:textFontWeight="800"
+        android:gravity="center"
+        android:text="QUIT"
+        android:background="@drawable/radius"
+        android:layout_marginTop="15dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_gravity="bottom"
+        android:onClick="onClickPlus">
+    </Button>
+
 </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
