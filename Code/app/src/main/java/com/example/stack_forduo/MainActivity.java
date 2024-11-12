@@ -6,6 +6,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -15,6 +18,11 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 public class MainActivity extends AppCompatActivity {
+    private ImageView imageView;
+    private LinearLayout modeLayout;  // 모드 선택 레이아웃
+    private View overlayBackground;   // 옅은 회색 배경 뷰
+    private TextView textViewStart;   // 시작 텍스트 뷰
+    private TextView textViewStack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,13 +35,36 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        TextView textViewStart = findViewById(R.id.textViewStart);
+        textViewStack =findViewById(R.id.textViewStack);
+        imageView = findViewById(R.id.imageView);
+        textViewStart = findViewById(R.id.textViewStart);
+        modeLayout = findViewById(R.id.mode_layout);
+        overlayBackground = findViewById(R.id.overlay_background);
+
+        // 초기에는 숨김처리(모드 선택)
+        modeLayout.setVisibility(View.GONE);
+        overlayBackground.setVisibility(View.GONE);
 
         // blink 애니메이션 가져오기
         Animation anim = AnimationUtils.loadAnimation(this, R.anim.blink_animation);
 
         // 애니메이션 재생
         textViewStart.startAnimation(anim);
+
+        Button singleModeButton = findViewById(R.id.singleMode_button);
+        Button multiModeButton = findViewById(R.id.multiMode_button);
+
+        singleModeButton.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, GameActivity.class);
+            intent.putExtra("MODE", "SINGLE");
+            startActivity(intent);
+        });
+
+        multiModeButton.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, GameActivity.class);
+            intent.putExtra("MODE", "MULTI");
+            startActivity(intent);
+        });
 
         // 스크린 전체화면 설정(appbar, homebar 숨기기)
         getWindow().getDecorView().setSystemUiVisibility(
@@ -48,8 +79,16 @@ public class MainActivity extends AppCompatActivity {
 
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            Intent intent = new Intent(MainActivity.this, GameActivity.class);
-            startActivity(intent);
+            textViewStack.setVisibility(View.GONE);
+            imageView.setVisibility(View.GONE);
+            
+            // 애니메이션 정지
+            textViewStart.clearAnimation();
+            textViewStart.setVisibility(View.GONE);
+            
+            // 모드 선택
+            overlayBackground.setVisibility(View.VISIBLE);
+            modeLayout.setVisibility(View.VISIBLE);
             return true;
         }
         return super.onTouchEvent(event);
