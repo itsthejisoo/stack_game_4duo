@@ -5,12 +5,20 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/main_background_color"
     tools:context=".MainActivity">
 
+    <!-- 회색 오버레이 -->
+    <View
+        android:id="@+id/overlay_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80AAAAAA"
+        android:visibility="gone" />
+
     <LinearLayout
-        android:layout_width="411dp"
-        android:layout_height="735dp"
-        android:background="@drawable/main_background_color"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical"
         tools:layout_editor_absoluteX="1dp"
@@ -59,6 +67,28 @@
             android:textColor="#6B7030"
             android:textFontWeight="800"
             android:textSize="17dp" />
+    </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/mode_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        >
+
+        <Button
+            android:id="@+id/singleMode_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Single Mode" />
+
+        <Button
+            android:id="@+id/multiMode_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Multi Mode"
+            android:layout_marginTop="16dp" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
