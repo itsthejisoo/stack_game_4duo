@@ -14,12 +14,13 @@ public class GameOverActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         isSingleMode = getIntent().getBooleanExtra("MODE", false);
+
         if(!isSingleMode) {
             setContentView(R.layout.activity_gameover_multi);
 
             String winner = getIntent().getStringExtra("WINNER");
-            int player2Score = getIntent().getIntExtra("PLAYER2_SCORE", 0);
             int player1Score = getIntent().getIntExtra("PLAYER1_SCORE", 0);
+            int player2Score = getIntent().getIntExtra("PLAYER2_SCORE", 0);
 
             TextView winnerTextView = findViewById(R.id.winner);
             winnerTextView.setText(winner);
@@ -37,7 +38,7 @@ public class GameOverActivity extends AppCompatActivity {
 
             TextView player1ScoreView = findViewById(R.id.player1_score_view);
 
-            player1ScoreView.setText(player1Score);
+            player1ScoreView.setText(String.valueOf(player1Score));
         }
 
         Button playAgainButton = findViewById(R.id.playagain);
@@ -56,7 +57,7 @@ public class GameOverActivity extends AppCompatActivity {
 
     public void onClickPlayAgain(View v) {
         Intent intent = new Intent(GameOverActivity.this, GameActivity.class);
-        intent.putExtra("MODE", isSingleMode ? "SINGLE" : "DOUBLE");
+        intent.putExtra("MODE", isSingleMode ? "SINGLE" : "MULTI");
         startActivity(intent);
     }
 
