@@ -4,20 +4,28 @@
 2인용 탑 쌓기 게임. 2024-2 모바일 프로그래밍 팀프로젝트
 
 ## 프로젝트 구성원
-<div style="display: flex; justify-content: center; gap: 25px;"> 
-    <div style="display: flex; align-items: center; flex-direction: column;">
-    <img src="https://avatars.githubusercontent.com/u/80537289?v=4" width=50 style="border-radius:100%">
-    <p>김지수 <a href="https://github.com/itsthejisoo">itsthejisoo</a></p>
-    </div>
-    <div style="display: flex; align-items: center; flex-direction: column;">
-        <img src="https://avatars.githubusercontent.com/u/113536288?v=4" width=50 style="border-radius:100%">
-        <p>최서정 <a href="https://github.com/bum22">bum22</a></p>
-    </div>
-    <div style="display: flex; align-items: center; flex-direction: column;">
-        <img src="https://avatars.githubusercontent.com/u/72370753?v=4" width=50 style="border-radius:100%">
-        <p>홍형준 <a href="https://github.com/Hong-lol">Hong-lol</a></p>
-    </div>
-</div>
+<table>
+  <tr>
+    <th>이름</th>
+    <th>프로필 사진</th>
+    <th>프로필 링크</th>
+  </tr>
+  <tr>
+    <td>김지수</td>
+    <td><img src="https://avatars.githubusercontent.com/u/80537289?v=4" width="50" style="border-radius:100%;"></td>
+    <td><a href="https://github.com/itsthejisoo">itsthejisoo</a></td>
+  </tr>
+  <tr>
+    <td>최서정</td>
+    <td><img src="https://avatars.githubusercontent.com/u/113536288?v=4" width="50" style="border-radius:100%;"></td>
+    <td><a href="https://github.com/bum22">bum22</a></td>
+  </tr>
+  <tr>
+    <td>홍형준</td>
+    <td><img src="https://avatars.githubusercontent.com/u/72370753?v=4" width="50" style="border-radius:100%;"></td>
+    <td><a href="https://github.com/Hong-lol">Hong-lol</a></td>
+  </tr>
+</table>
   
 ## 계획
 - **~ 10/28**
