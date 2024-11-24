@@ -8,6 +8,9 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class GameActivity extends AppCompatActivity {
@@ -16,6 +19,7 @@ public class GameActivity extends AppCompatActivity {
     public  boolean isSingleMode() {
         return isSingleMode;
     }
+    private GameView player1GameView, player2GameView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +40,7 @@ public class GameActivity extends AppCompatActivity {
             FrameLayout player2Layout = findViewById(R.id.player2);
             
             // GameView 인스턴스 생성 및 FrameLayout에 추가
-            GameView player2GameView = new GameView(this, player2, player2ScoreView);
+            player2GameView = new GameView(this, player2, player2ScoreView);
             player2Layout.addView(player2GameView);
         }
         else {
@@ -46,7 +50,7 @@ public class GameActivity extends AppCompatActivity {
         player1 = new Player("Player 1");
         EditText player1ScoreView = findViewById(R.id.player1_score);
         FrameLayout player1Layout = findViewById(R.id.player1);
-        GameView player1GameView = new GameView(this, player1, player1ScoreView);
+        player1GameView = new GameView(this, player1, player1ScoreView);
         player1Layout.addView(player1GameView);
         
         // 스크린 전체화면 설정 (appbar, homebar 숨기기)
@@ -58,6 +62,71 @@ public class GameActivity extends AppCompatActivity {
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         );
+
+        setupOnBackPressedDispatcher();
+    }
+
+    // 게임 일시 정지
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (player1 != null) {
+            player1GameView.pauseGame();
+        }
+        if (player2GameView != null) {
+            player2GameView.pauseGame();
+        }
+    }
+
+    // 게임이 다시 시작
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (player1 != null) {
+            player1GameView.resumeGame();
+        }
+        if (player2GameView != null) {
+            player2GameView.resumeGame();
+        }
+    }
+
+    // 뒤로가기 버튼을 누르면 일시정지 팝업창 표시
+    private void setupOnBackPressedDispatcher() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (player1 != null) {
+                    player1GameView.pauseGame();
+                }
+                if (player2GameView != null) {
+                    player2GameView.pauseGame();
+                }
+
+                // 팝업창 표시
+                new AlertDialog.Builder(GameActivity.this)
+                        .setTitle("게임 일시정지")
+                        .setMessage("계속하시겠습니까?")
+
+                        // 게임 재개
+                        .setNegativeButton("계속하기", (dialog, which) -> {
+                            if (player1 != null) {
+                                player1GameView.resumeGame();
+                            }
+                            if (player2GameView != null) {
+                                player2GameView.resumeGame();
+                            }
+                        })
+                        // 메인 화면으로 이동
+                        .setPositiveButton("종료", (dialog, which) -> {
+                            Intent intent = new Intent(GameActivity.this, MainActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(intent);
+                            finish();
+                        })
+                        .setCancelable(false)   // 팝업창 외부를 눌러도 창이 닫히지 않게
+                        .show();
+            }
+        });
     }
 
     public void gameOver() {
