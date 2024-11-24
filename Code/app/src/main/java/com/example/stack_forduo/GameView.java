@@ -27,6 +27,7 @@ public class GameView extends View {
     private Player player;
     private EditText scoreView;
     private GameActivity gameActivity;
+    private boolean isPaused = false;
 
     private final Random random = new Random();
     private final int[] blockColors = {
@@ -58,9 +59,21 @@ public class GameView extends View {
         blockX = 0;
     }
 
+    public void pauseGame() {
+        isPaused = true;
+    }
+
+    public void resumeGame() {
+        isPaused = false;
+        invalidate();
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+        if (isPaused) return;
+
         if (blockMovingRight) {
             blockX += blockSpeed;
             if (blockX + blockWidth > screenWidth) {
@@ -86,7 +99,9 @@ public class GameView extends View {
             canvas.drawRect(block.x, blockY - i * blockHeight, block.x + blockWidth, blockY - (i - 1) * blockHeight, blockPaint);
         }
 
-        invalidate();
+        if (!isPaused) {
+            invalidate();
+        }
     }
 
     @Override
