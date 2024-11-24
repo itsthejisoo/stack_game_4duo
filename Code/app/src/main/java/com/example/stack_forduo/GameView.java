@@ -8,10 +8,17 @@ import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import com.example.stack_forduo.GameActivity;
+import com.example.stack_forduo.Player;
+
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 
 public class GameView extends View {
     private Paint blockPaint;
@@ -28,19 +35,33 @@ public class GameView extends View {
     private EditText scoreView;
     private GameActivity gameActivity;
     private boolean isPaused = false;
-
+    private String clientId;
     private final Random random = new Random();
     private final int[] blockColors = {
             Color.parseColor("#2B4C40"), Color.parseColor("#547734"),
             Color.parseColor("#485726"), Color.parseColor("#8C924F")
     };
 
-    public GameView(Context context, Player player, EditText scoreView) {
+    // Socket variables
+    private Socket socket;
+    private PrintWriter out;
+    private Scanner in;
+    public void setOut(PrintWriter out) {
+        this.out = out; // `GameActivity`에서 전달받은 `out`을 설정
+    }
+
+    public GameView(Context context, Player player, EditText scoreView, PrintWriter out, String clientId) {
         super(context);
         this.player = player;
         this.scoreView = scoreView;
+        this.out = out;  // GameActivity에서 전달받은 PrintWriter
         this.gameActivity = (GameActivity) context;
+        this.clientId = clientId;
         init();
+    }
+    // clientId를 설정하는 메서드 추가
+    public void setClientId(String clientId) {
+        this.clientId = clientId; // 외부에서 clientId 설정 가능
     }
 
     private void init() {
@@ -49,31 +70,24 @@ public class GameView extends View {
 
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         screenWidth = displayMetrics.widthPixels;
-        if (((GameActivity) getContext()).isSingleMode()) {
-            screenHeight = displayMetrics.heightPixels; // Single 모드일 때 전체 높이 사용
+
+        if (gameActivity.isSingleMode()) {
+            screenHeight = displayMetrics.heightPixels;
         } else {
-            screenHeight = displayMetrics.heightPixels / 2; // Double 모드일 때 절반 높이 사용
+            screenHeight = displayMetrics.heightPixels / 2;
         }
 
         blockY = screenHeight - blockHeight;
         blockX = 0;
     }
 
-    public void pauseGame() {
-        isPaused = true;
-    }
 
-    public void resumeGame() {
-        isPaused = false;
-        invalidate();
-    }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        if (isPaused) return;
-
+        // 블록 움직임
         if (blockMovingRight) {
             blockX += blockSpeed;
             if (blockX + blockWidth > screenWidth) {
@@ -86,6 +100,7 @@ public class GameView extends View {
             }
         }
 
+        // 블록 그리기
         canvas.drawRect(blockX,
                 blockY - towerHeight * blockHeight,
                 blockX + blockWidth,
@@ -99,51 +114,119 @@ public class GameView extends View {
             canvas.drawRect(block.x, blockY - i * blockHeight, block.x + blockWidth, blockY - (i - 1) * blockHeight, blockPaint);
         }
 
+        // 일시정지 상태가 아닐 때만 화면 갱신
         if (!isPaused) {
             invalidate();
         }
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            int newBlockCenterX = blockX + blockWidth / 2;
-            if (!blocks.isEmpty()) {
-                int previousBlockCenterX = blocks.get(blocks.size() - 1).x + blockWidth / 2;
-                double maxOffset = (double) blockWidth / 2;
-                if (Math.abs(newBlockCenterX - previousBlockCenterX) > maxOffset) {
-                    gameActivity.gameOver();
-                    return true;
+    private boolean processBlock(int x, int color) {
+        // 블록 추가
+        blocks.add(new BlockInfo(x, color));
+        towerHeight++;
+        player.incrementScore();
+        scoreView.setText(String.valueOf(player.getScore()));
+
+        // 게임 종료 조건 확인
+        if (blocks.size() > 1) {
+            int previousBlockCenterX = blocks.get(blocks.size() - 2).x + blockWidth / 2;
+            int newBlockCenterX = blocks.get(blocks.size() - 1).x + blockWidth / 2;
+            double maxOffset = (double) blockWidth / 2;
+
+            if (Math.abs(newBlockCenterX - previousBlockCenterX) > maxOffset) {
+                if (out != null) {
+                    new Thread(() -> {
+                        try {
+                            out.println("GAME_OVER|" + clientId); // 게임 종료 메시지와 클라이언트 ID 전송
+                            out.flush();
+                            android.util.Log.d("GameView", "서버에게 게임 종료 알림 전송 완료");
+                        } catch (Exception e) {
+                            android.util.Log.e("GameView", "게임 종료 메시지 전송 실패", e);
+                        }
+                    }).start();
                 }
-            }
-
-            blocks.add(new BlockInfo(blockX, blockPaint.getColor()));
-            towerHeight++;
-            player.incrementScore();
-            scoreView.setText(String.valueOf(player.getScore()));
-
-            if (towerHeight == 10) {
-                blockSpeed = 11;
-            }
-            if (towerHeight % 10 == 0) {
-                blockSpeed += 1;
-            }
-
-            updateBlockColor();
-
-            if (towerHeight * blockHeight > screenHeight / 4) {
-                blocks.remove(0);
-                towerHeight--;
+                gameActivity.gameOver(); // 게임 종료
+                return false;
             }
         }
-        return true;
+
+        // 블록 속도 증가
+        if (towerHeight == 10) {
+            blockSpeed = 11;
+        }
+        if (towerHeight % 10 == 0) {
+            blockSpeed += 1;
+        }
+
+        // 화면 크기 초과 시 블록 제거
+        if (towerHeight * blockHeight > screenHeight / 4) {
+            blocks.remove(0);
+            towerHeight--;
+        }
+
+        // 블록 색상 업데이트 및 화면 다시 그리기
+        updateBlockColor();
+        invalidate();
+
+        return true; // 블록이 정상적으로 처리됨
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (!gameActivity.isSingleMode() && !gameActivity.isOpponentConnected) {
+            // Toast.makeText(getContext(), "상대방과 매칭 중입니다. 잠시만 기다려 주세요.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (!gameActivity.isSingleMode() && player == gameActivity.getPlayer1()) {
+            // Toast.makeText(getContext(), "상대방 영역입니다.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            int newBlockCenterX = blockX + blockWidth / 2;
+            int blockColor = blockPaint.getColor();
+
+            if (out != null) {
+                final String message = blockX + "," + blockColor;
+                new Thread(() -> {
+                    try {
+                        out.println(message);
+                        android.util.Log.d("GameView", "블록 정보 전송 성공: " + message);
+                    } catch (Exception e) {
+                        android.util.Log.e("GameView", "블록 정보 전송 실패", e);
+                    }
+                }).start();
+            }
+            processBlock(blockX, blockColor);
+
+            // 상대방에게 블록 정보 전송
+
+            return true;
+        }
+        return false;
+    }
+
+
+
+    public void addOpponentBlock(int x, int color) {
+        processBlock(x, color); // 상대방 블록 처리
+    }
+
+    // 게임 일시정지
+    public void pauseGame() {
+        isPaused = true;
+    }
+
+    // 게임 재개
+    public void resumeGame() {
+        isPaused = false;
+        invalidate();
     }
 
     private void updateBlockColor() {
         int randomColor = blockColors[random.nextInt(blockColors.length)];
         blockPaint.setColor(randomColor);
     }
-
     private static class BlockInfo {
         int x;
         int color;
