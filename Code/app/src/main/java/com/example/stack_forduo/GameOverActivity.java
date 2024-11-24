@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class GameOverActivity extends AppCompatActivity {
@@ -53,6 +54,8 @@ public class GameOverActivity extends AppCompatActivity {
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         );
+
+        setupOnBackPressedDispatcher();
     }
 
     public void onClickPlayAgain(View v) {
@@ -64,5 +67,14 @@ public class GameOverActivity extends AppCompatActivity {
     public void onClickQuit(View v) {
         Intent intent = new Intent(GameOverActivity.this, MainActivity.class);
         startActivity(intent);
+    }
+
+    private void setupOnBackPressedDispatcher() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // 아무것도 하지 않음으로써 뒤로가기 버튼 무효화
+            }
+        });
     }
 }
