@@ -48,20 +48,22 @@ public class GameServer {
 
                 synchronized (connectedClients) {
                     connectedClients.put(clientId, this); // 클라이언트 등록
-                    //System.out.println("[새 연결] 클라이언트 ID: " + clientId);
-                    //System.out.println("[디버그] 매칭 확인 전 isPaired(clientId): " + !isPaired(clientId));
+                    // System.out.println("[새 연결] 클라이언트 ID: " + clientId);
+                    // System.out.println("[디버그] 매칭 확인 전 isPaired(clientId): " +
+                    // !isPaired(clientId));
                     // 매칭 여부 확인
                     if (!isPaired(clientId)) {
                         out.println("WAITING"); // 대기 메시지 전송
                     } else {
                         out.println("CONNECTED"); // 매칭 완료 메시지 전송
-                        //System.out.println("[매칭 완료] 클라이언트 ID: " + clientId);
+                        // System.out.println("[매칭 완료] 클라이언트 ID: " + clientId);
                         broadcastPairingInfo(clientId); // 매칭된 상대방 정보 전송
                     }
-                    //System.out.println("[디버그] 매칭 확인 후 isPaired(clientId): " + !isPaired(clientId));
+                    // System.out.println("[디버그] 매칭 확인 후 isPaired(clientId): " +
+                    // !isPaired(clientId));
                 }
-                
-                //out.println("CONNECTED");
+
+                // out.println("CONNECTED");
                 scheduleMessageCheck();
 
             } catch (IOException e) {
@@ -77,15 +79,16 @@ public class GameServer {
                 return connectedClients.size() >= 2; // 2명 이상 연결된 경우 매칭된 상태로 간주
             }
         }
+
         private void broadcastPairingInfo(String clientId) {
             // 매칭된 두 클라이언트를 찾아서 상대방 ID를 전송
             connectedClients.forEach((id, handler) -> {
                 if (!id.equals(clientId)) { // 현재 클라이언트를 제외한 상대방에게
-                    handler.sendMessage("OPPONENT_ID:" + clientId); // 상대방 ID 전송
+                    handler.sendMessage("CONNECTED");
                 }
             });
         }
-        
+
         // 주기적으로 클라이언트의 메시지를 확인
         private void scheduleMessageCheck() {
             ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -98,7 +101,7 @@ public class GameServer {
                             connectedClients.remove(clientId);
                             System.out.println("[게임 종료] 클라이언트 ID: " + clientId);
                         }
-                        
+
                         if (message != null) {
                             System.out.println("[수신] " + clientId + " -> " + message);
                             broadcastMessage(clientId, message);
