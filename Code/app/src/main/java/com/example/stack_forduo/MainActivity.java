@@ -2,6 +2,7 @@ package com.example.stack_forduo;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
@@ -53,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button singleModeButton = findViewById(R.id.singleMode_button);
         Button multiModeButton = findViewById(R.id.multiMode_button);
+        Button serverModeButton = findViewById(R.id.serverMode_button);
 
         singleModeButton.setOnClickListener(view -> {
             Intent intent = new Intent(MainActivity.this, GameActivity.class);
@@ -66,6 +68,12 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        serverModeButton.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, GameActivity.class);
+            intent.putExtra("MODE", "SERVER");
+            startActivity(intent);
+        });
+
         // 스크린 전체화면 설정(appbar, homebar 숨기기)
         getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
@@ -75,6 +83,37 @@ public class MainActivity extends AppCompatActivity {
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         );
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.v("start", "onStart() called");
+    }
+
+    // activity lifecycle logcat에 출력
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.v("resume", "onResume() called");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.v("pause", "onPause() called");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.v("stop", "onStop() called");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.v("destroy", "onDestroy() called");
     }
 
     public boolean onTouchEvent(MotionEvent event) {
