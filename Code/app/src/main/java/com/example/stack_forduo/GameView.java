@@ -71,7 +71,7 @@ public class GameView extends View {
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         screenWidth = displayMetrics.widthPixels;
 
-        if (gameActivity.isSingleMode()) {
+        if (gameActivity.whichMode() == 0) {
             screenHeight = displayMetrics.heightPixels;
         } else {
             screenHeight = displayMetrics.heightPixels / 2;
@@ -124,8 +124,6 @@ public class GameView extends View {
         // 블록 추가
         blocks.add(new BlockInfo(x, color));
         towerHeight++;
-        player.incrementScore();
-        scoreView.setText(String.valueOf(player.getScore()));
 
         // 게임 종료 조건 확인
         if (blocks.size() > 1) {
@@ -149,6 +147,8 @@ public class GameView extends View {
                 return false;
             }
         }
+        player.incrementScore();
+        scoreView.setText(String.valueOf(player.getScore()));
 
         // 블록 속도 증가
         if (towerHeight == 10) {
@@ -173,11 +173,11 @@ public class GameView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (!gameActivity.isSingleMode() && !gameActivity.isOpponentConnected) {
+        if (gameActivity.whichMode() == 2 && !gameActivity.isOpponentConnected) {
             // Toast.makeText(getContext(), "상대방과 매칭 중입니다. 잠시만 기다려 주세요.", Toast.LENGTH_SHORT).show();
             return false;
         }
-        if (!gameActivity.isSingleMode() && player == gameActivity.getPlayer1()) {
+        if (gameActivity.whichMode() == 2 && player == gameActivity.getPlayer1()) {
             // Toast.makeText(getContext(), "상대방 영역입니다.", Toast.LENGTH_SHORT).show();
             return false;
         }

@@ -23,7 +23,7 @@ public class GameActivity extends AppCompatActivity {
     private GameView player1GameView; // player1 화면
     private GameView player2GameView; // player2 화면
     private Player player1, player2;
-    private boolean isSingleMode;
+    private int whichMode;
     private Socket socket;
     private PrintWriter out;
     private Scanner in;
@@ -34,8 +34,8 @@ public class GameActivity extends AppCompatActivity {
         return out;
     }
     // Getter for isSingleMode
-    public boolean isSingleMode() {
-        return isSingleMode;
+    public int whichMode() {
+        return whichMode;
     }
     public Player getPlayer1() {
         return player1;
@@ -48,17 +48,30 @@ public class GameActivity extends AppCompatActivity {
         // 모드 확인
         Intent intent = getIntent();
         String mode = intent.getStringExtra("MODE");
-        isSingleMode = "SINGLE".equals(mode);
+        if("SINGLE".equals(mode)) {
+            whichMode = 0;
+        }
+        else if("MULTI".equals(mode)) {
+            whichMode = 1;
+        }
+        else if("SERVER".equals(mode)) {
+            whichMode = 2;
+        }
 
-        if (!isSingleMode) {
+        if (whichMode == 0) {
+            setContentView(R.layout.activity_game_single);
+        }
+        else if (whichMode == 1) {
             setContentView(R.layout.activity_game_multi);
+            player2 = new Player("Player 2");
+        }
+        else if (whichMode == 2) {
+            setContentView(R.layout.activity_game_server);
 
             player2 = new Player("Player 2");
 
             // 상대방 연결 처리
             connectToServer();
-        } else {
-            setContentView(R.layout.activity_game_single);
         }
 
         // 플레이어1 초기화
@@ -68,7 +81,13 @@ public class GameActivity extends AppCompatActivity {
         player1GameView = new GameView(this, player1, player1ScoreView, out, null); // PrintWriter 전달
         player1Layout.addView(player1GameView);
 
-        if (!isSingleMode) {
+        if(whichMode == 1) {
+            EditText player2ScoreView = findViewById(R.id.player2_score);
+            FrameLayout player2Layout = findViewById(R.id.player2);
+            player2GameView = new GameView(this, player2, player2ScoreView, out, null); // PrintWriter 전달
+            player2Layout.addView(player2GameView);
+        }
+        else if (whichMode == 2) {
             // 플레이어2 초기화
             EditText player2ScoreView = findViewById(R.id.player2_score);
             FrameLayout player2Layout = findViewById(R.id.player2);
@@ -89,7 +108,7 @@ public class GameActivity extends AppCompatActivity {
         setupOnBackPressedDispatcher();
 
         // 상대방 연결 대기
-        if (!isSingleMode) {
+        if (whichMode == 2) {
             checkOpponentConnection();
         }
     }
@@ -181,7 +200,7 @@ public class GameActivity extends AppCompatActivity {
                 if (!isOpponentConnected) {
                     runOnUiThread(() -> {
                         Toast.makeText(this, "상대방 연결 실패. 싱글 모드로 전환합니다.", Toast.LENGTH_LONG).show();
-                        isSingleMode = true;
+                        whichMode = 0;
                         restartSingleMode();
                     });
                 }
@@ -228,12 +247,7 @@ public class GameActivity extends AppCompatActivity {
             @Override
             public void handleOnBackPressed() {
                 // 게임 일시정지
-                if (player1 != null) {
-                    player1GameView.pauseGame();
-                }
-                if (player2GameView != null) {
-                    player2GameView.pauseGame();
-                }
+                onPause();
 
                 // 팝업창 표시
                 new AlertDialog.Builder(GameActivity.this)
@@ -242,12 +256,7 @@ public class GameActivity extends AppCompatActivity {
 
                         // 게임 재개
                         .setNegativeButton("계속하기", (dialog, which) -> {
-                            if (player1 != null) {
-                                player1GameView.resumeGame();
-                            }
-                            if (player2GameView != null) {
-                                player2GameView.resumeGame();
-                            }
+                            onResume();
                         })
                         // 메인 화면으로 이동
                         .setPositiveButton("종료", (dialog, which) -> {
@@ -272,7 +281,7 @@ public class GameActivity extends AppCompatActivity {
         if (player2 != null) {
             intent.putExtra("PLAYER2_SCORE", player2.getScore());
         }
-        intent.putExtra("MODE", isSingleMode);
+        intent.putExtra("MODE", whichMode);
         startActivity(intent);
     }
 

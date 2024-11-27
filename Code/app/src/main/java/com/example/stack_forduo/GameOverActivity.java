@@ -10,13 +10,13 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class GameOverActivity extends AppCompatActivity {
-    private boolean isSingleMode;
+    private int whichMode;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        isSingleMode = getIntent().getBooleanExtra("MODE", false);
+        whichMode = getIntent().getIntExtra("MODE", 0);
 
-        if(!isSingleMode) {
+        if(whichMode == 1 || whichMode == 2) {
             setContentView(R.layout.activity_gameover_multi);
 
             String winner = getIntent().getStringExtra("WINNER");
@@ -60,7 +60,13 @@ public class GameOverActivity extends AppCompatActivity {
 
     public void onClickPlayAgain(View v) {
         Intent intent = new Intent(GameOverActivity.this, GameActivity.class);
-        intent.putExtra("MODE", isSingleMode ? "SINGLE" : "MULTI");
+        if (whichMode == 0) {
+            intent.putExtra("MODE", "SINGLE");
+        } else if (whichMode == 1) {
+            intent.putExtra("MODE", "MULTI");
+        } else if (whichMode == 2) {
+            intent.putExtra("MODE", "SERVER");
+        }
         startActivity(intent);
     }
 
