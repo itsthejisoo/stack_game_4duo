@@ -159,7 +159,7 @@ public class GameView extends View {
         }
 
         // 화면 크기 초과 시 블록 제거
-        if (towerHeight * blockHeight > screenHeight / 4) {
+        if (towerHeight * blockHeight > screenHeight / 3) {
             blocks.remove(0);
             towerHeight--;
         }
