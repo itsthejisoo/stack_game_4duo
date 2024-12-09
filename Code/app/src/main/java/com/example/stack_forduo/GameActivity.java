@@ -12,9 +12,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.stack_forduo.GameView;
-import com.example.stack_forduo.Player;
-
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
@@ -27,19 +24,8 @@ public class GameActivity extends AppCompatActivity {
     private Socket socket;
     private PrintWriter out;
     private Scanner in;
-    public boolean isOpponentConnected = false;
+    public boolean isOpponentConnected = false; // 상대방 연결 여부 확인 변수
     public String clientId;
-
-    public PrintWriter getOut() {
-        return out;
-    }
-    // Getter for isSingleMode
-    public int whichMode() {
-        return whichMode;
-    }
-    public Player getPlayer1() {
-        return player1;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,47 +33,34 @@ public class GameActivity extends AppCompatActivity {
 
         // 모드 확인
         Intent intent = getIntent();
-        String mode = intent.getStringExtra("MODE");
-        if("SINGLE".equals(mode)) {
-            whichMode = 0;
-        }
-        else if("MULTI".equals(mode)) {
-            whichMode = 1;
-        }
-        else if("SERVER".equals(mode)) {
-            whichMode = 2;
-        }
+        whichMode = intent.getIntExtra("MODE", 0);
 
         if (whichMode == 0) {
             setContentView(R.layout.activity_game_single);
-        }
-        else if (whichMode == 1) {
+        } else if (whichMode == 1) {
             setContentView(R.layout.activity_game_multi);
-            player2 = new Player("Player 2");
-        }
-        else if (whichMode == 2) {
+            player2 = new Player(intent.getStringExtra("PLAYER2_NAME"));
+        } else if (whichMode == 2) {
             setContentView(R.layout.activity_game_server);
-
-            player2 = new Player("Player 2");
-
-            // 상대방 연결 처리
-            connectToServer();
+            player2 = new Player(intent.getStringExtra("PLAYER2_NAME"));
+            connectToServer(); // 서버 연결 로직 수행
         }
 
-        // 플레이어1 초기화
-        player1 = new Player("Player 1");
+        // 플레이어 1 설정
+        player1 = new Player(intent.getStringExtra("PLAYER1_NAME"));
+
+        // 플레이어 1의 게임 화면 설정
         EditText player1ScoreView = findViewById(R.id.player1_score);
         FrameLayout player1Layout = findViewById(R.id.player1);
-        player1GameView = new GameView(this, player1, player1ScoreView, out, null); // PrintWriter 전달
+        player1GameView = new GameView(this, player1, player1ScoreView, out, null);
         player1Layout.addView(player1GameView);
 
-        if(whichMode == 1) {
+        if (whichMode == 1) {
             EditText player2ScoreView = findViewById(R.id.player2_score);
             FrameLayout player2Layout = findViewById(R.id.player2);
             player2GameView = new GameView(this, player2, player2ScoreView, out, null); // PrintWriter 전달
             player2Layout.addView(player2GameView);
-        }
-        else if (whichMode == 2) {
+        } else if (whichMode == 2) {
             // 플레이어2 초기화
             EditText player2ScoreView = findViewById(R.id.player2_score);
             FrameLayout player2Layout = findViewById(R.id.player2);
@@ -102,8 +75,7 @@ public class GameActivity extends AppCompatActivity {
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        );
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
 
         setupOnBackPressedDispatcher();
 
@@ -111,6 +83,63 @@ public class GameActivity extends AppCompatActivity {
         if (whichMode == 2) {
             checkOpponentConnection();
         }
+    }
+
+    private void setupOnBackPressedDispatcher() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // 게임 일시정지
+                onPause();
+
+                // 팝업창 표시
+                new AlertDialog.Builder(GameActivity.this)
+                        .setTitle("게임 일시정지")
+                        .setMessage("계속하시겠습니까?")
+                        // 게임 재개
+                        .setNegativeButton("계속하기", (dialog, which) -> {
+                            onResume();
+                        })
+                        // 메인 화면으로 이동
+                        .setPositiveButton("종료", (dialog, which) -> {
+                            Intent intent = new Intent(GameActivity.this, MainActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(intent);
+                            finish();
+                        })
+                        .setCancelable(false) // 팝업창 외부를 눌러도 창이 닫히지 않게
+                        .show();
+            }
+        });
+    }
+
+    public void gameOver() {
+        Intent intent = new Intent(GameActivity.this, GameOverActivity.class);
+
+        // 승자와 각 플레이어의 점수를 가져옴
+        intent.putExtra("WINNER", player1.getScore() > (player2 != null ? player2.getScore() : 0)
+                ? player1.getName()
+                : (player2 != null ? player2.getName() : "Player 1"));
+        intent.putExtra("PLAYER1_NAME", player1.getName());
+        intent.putExtra("PLAYER1_SCORE", player1.getScore());
+
+        if (player2 != null) {
+            intent.putExtra("PLAYER2_NAME", player2.getName());
+            intent.putExtra("PLAYER2_SCORE", player2.getScore());
+        }
+
+        intent.putExtra("MODE", whichMode);
+        startActivity(intent);
+    }
+
+    // whichMode 값을 반환하는 메서드 추가
+    public int whichMode() {
+        return whichMode;
+    }
+
+    // player1 객체를 반환하는 메서드 추가
+    public Player getPlayer1() {
+        return player1;
     }
 
     private void connectToServer() {
@@ -122,7 +151,7 @@ public class GameActivity extends AppCompatActivity {
                 in = new Scanner(socket.getInputStream()); // 소켓 입력 스트림
 
                 // 클라이언트 ID 생성 및 서버로 전송
-                clientId = "Client_" + System.currentTimeMillis(); // 고유 ID 생성
+                String clientId = "Client_" + System.currentTimeMillis(); // 고유 ID 생성
 
                 // `GameView`에 `out`과 `clientId` 전달
                 runOnUiThread(() -> {
@@ -139,22 +168,18 @@ public class GameActivity extends AppCompatActivity {
                 // 서버로부터 메시지 수신 루프
                 while (in.hasNextLine()) {
                     String message = in.nextLine();
-                    android.util.Log.d("GameActivity", "서버로부터 메시지 수신: " + message);
+                    Log.d("GameActivity", "서버로부터 메시지 수신: " + message);
 
                     if (message.equals("ID_REQUEST")) {
                         // 서버에서 ID 요청 시 다시 전송
                         out.println(clientId);
-                        android.util.Log.d("GameActivity", "서버로 클라이언트 ID 전송: " + clientId);
+                        Log.d("GameActivity", "서버로 클라이언트 ID 전송: " + clientId);
                     } else if (message.equals("WAITING")) {
-
                         // 대기 상태 표시
                         runOnUiThread(() -> Toast.makeText(this, "상대방을 기다리는 중...", Toast.LENGTH_SHORT).show());
-                    }else if (message.equals("CONNECTED")) {
+                    } else if (message.equals("CONNECTED")) {
                         // 매칭 완료 메시지 처리
-                        runOnUiThread(() -> {
-                            isOpponentConnected = true;
-                            Toast.makeText(this, "상대방과 연결되었습니다!", Toast.LENGTH_SHORT).show();
-                        });
+                        runOnUiThread(() -> Toast.makeText(this, "상대방과 연결되었습니다!", Toast.LENGTH_SHORT).show());
                     } else if (message.contains(",")) {
                         // 블록 정보 메시지 처리
                         String[] parts = message.split(",");
@@ -169,12 +194,12 @@ public class GameActivity extends AppCompatActivity {
                                 }
                             });
                         } catch (NumberFormatException e) {
-                            android.util.Log.e("GameActivity", "잘못된 블록 데이터 형식: " + message, e);
+                            Log.e("GameActivity", "잘못된 블록 데이터 형식: " + message, e);
                         }
                     }
                 }
             } catch (Exception e) {
-                android.util.Log.e("GameActivity", "서버 연결 실패", e);
+                Log.e("GameActivity", "서버 연결 실패", e);
                 runOnUiThread(() -> {
                     Toast.makeText(this, "서버 연결 실패! 메인 화면으로 돌아갑니다.", Toast.LENGTH_SHORT).show();
                     // MainActivity로 이동
@@ -239,50 +264,6 @@ public class GameActivity extends AppCompatActivity {
         if (player2GameView != null) {
             player2GameView.resumeGame();
         }
-    }
-
-    // 뒤로가기 버튼을 누르면 일시정지 팝업창 표시
-    private void setupOnBackPressedDispatcher() {
-        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                // 게임 일시정지
-                onPause();
-
-                // 팝업창 표시
-                new AlertDialog.Builder(GameActivity.this)
-                        .setTitle("게임 일시정지")
-                        .setMessage("계속하시겠습니까?")
-
-                        // 게임 재개
-                        .setNegativeButton("계속하기", (dialog, which) -> {
-                            onResume();
-                        })
-                        // 메인 화면으로 이동
-                        .setPositiveButton("종료", (dialog, which) -> {
-                            Intent intent = new Intent(GameActivity.this, MainActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            startActivity(intent);
-                            finish();
-                        })
-                        .setCancelable(false)   // 팝업창 외부를 눌러도 창이 닫히지 않게
-                        .show();
-            }
-        });
-    }
-
-    public void gameOver() {
-        Intent intent = new Intent(GameActivity.this, GameOverActivity.class);
-
-        // 승자와 각 플레이어의 점수를 가져옴
-        intent.putExtra("WINNER", player1.getScore() > (player2 != null ? player2.getScore() : 0)
-                ? player1.getName() : (player2 != null ? player2.getName() : "Player 1"));
-        intent.putExtra("PLAYER1_SCORE", player1.getScore());
-        if (player2 != null) {
-            intent.putExtra("PLAYER2_SCORE", player2.getScore());
-        }
-        intent.putExtra("MODE", whichMode);
-        startActivity(intent);
     }
 
 }
