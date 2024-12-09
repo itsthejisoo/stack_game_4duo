@@ -178,8 +178,11 @@ public class GameActivity extends AppCompatActivity {
                         // 대기 상태 표시
                         runOnUiThread(() -> Toast.makeText(this, "상대방을 기다리는 중...", Toast.LENGTH_SHORT).show());
                     } else if (message.equals("CONNECTED")) {
-                        // 매칭 완료 메시지 처리
-                        runOnUiThread(() -> Toast.makeText(this, "상대방과 연결되었습니다!", Toast.LENGTH_SHORT).show());
+                        // 매칭 완료 메시지 처
+                        runOnUiThread(() -> {
+                            isOpponentConnected = true;
+                            Toast.makeText(this, "상대방과 연결되었습니다!", Toast.LENGTH_SHORT).show();
+                        });
                     } else if (message.contains(",")) {
                         // 블록 정보 메시지 처리
                         String[] parts = message.split(",");
