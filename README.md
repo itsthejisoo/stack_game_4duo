@@ -1,9 +1,12 @@
 # stack_game_4duo
 
 ## 개요
-2인용 탑 쌓기 게임. 2024-2 모바일 프로그래밍 팀프로젝트
+
+2인용 탑 쌓기 게임. <br>
+2024-2 SSU AI융합학부 모바일 프로그래밍 수업 (김강희 교수님) - 팀프로젝트
 
 ## 프로젝트 구성원
+
 <table>
   <tr>
     <th>이름</th>
@@ -34,15 +37,33 @@
   - 제안서 작성
   - 개발 환경 설정
 - **10/29 ~ 11/1**
-  - ui 디자인
+  - ui 디자인, 폰트 xml 추가
   - 게임 로직 구현
 - **11/2 ~ 11/13**
   - 상세 기능 구현
   - 시작화면, 종료화면 수정
   - 모드 선택 기능 추가
+- **11/14 ~ 11/27**
+  - soketio를 사용하여 서버 구축
+  - 단말기 간의 게임 서버 연결
+- **11/29 ~ 12/9**
+  - 각 플레이어의 닉네임을 가져와서 이름과 점수 저장
+  - 최종 보고서 NickNameActivity를 제외하고 작성 완료
+  - 최종 발표 ppt 제작 완료
+- **12/10**
+  - 최종 보고서 작성 완료
+  - ppt 최종 수정 완료
+  - 대본 작성
 
+## 서버 모드 사용 방법
+
+1. GameServer.java를 실행한다.
+2. 두 개의 에뮬레이터에서 stack 게임을 실행한다.
+3. 모드 선택을 server mode로 하고 본인 넥네임을 Player1에, 상대방 닉네임을 Player2에 작성한다.
+4. 상단 화면은 상대방 게임 화면이고, 하단 화면은 본인 게임 화면이다. 하단 화면으로 게임을 즐긴다.
 
 > ### 프로젝트 clone할때 주의사항
+>
 > - 프로젝트 clone 후 실행시키기 위해서 Code 파일을 열어주십시오.
 > - 이 프로젝트는 맥북으로 작업되었기 때문에 윈도우에서 실행시 에러가 발생할 수 있습니다.
->   - ```SDK location not found. Define location with an ANDROID_SDK_ROOT environment variable or by setting the sdk.dir path in your project's local properties file``` 에러가 발생할 경우 <br> Code 디렉토리에 local.properties 파일을 생성하고 아래와 같이 작성해주십시오. <br> 윈도의 경우: ```sdk.dir=c:\Users\'사용자 이름'\AppData\Local\android\adk```<br> 맥의 경우: ```sdk.dir=/Users/'사용자 이름'/Library/Android/sdk```
+>   - `SDK location not found. Define location with an ANDROID_SDK_ROOT environment variable or by setting the sdk.dir path in your project's local properties file` 에러가 발생할 경우 <br> Code 디렉토리에 local.properties 파일을 생성하고 아래와 같이 작성해주십시오. <br> 윈도의 경우: `sdk.dir=c:\Users\'사용자 이름'\AppData\Local\android\adk`<br> 맥의 경우: `sdk.dir=/Users/'사용자 이름'/Library/Android/sdk`
