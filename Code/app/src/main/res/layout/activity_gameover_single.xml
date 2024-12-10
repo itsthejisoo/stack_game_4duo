@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,8 +10,11 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_gravity="center">
 
+        <!-- "Game Over" 텍스트 -->
         <TextView
             android:id="@+id/winner_text"
             android:layout_width="wrap_content"
@@ -29,8 +33,9 @@
             android:background="@null"
             android:padding="10dp"
             android:layout_gravity="center"
-            android:layout_marginTop="265dp">
-        </TextView>
+            android:layout_marginTop="50dp" />
+
+        <!-- 플레이어 점수 -->
         <TextView
             android:id="@+id/playerscore_text"
             android:layout_width="wrap_content"
@@ -43,14 +48,13 @@
             android:textFontWeight="800"
             android:textSize="18dp"
             android:textAlignment="center"
-            android:background="@null">
-        </TextView>
+            android:background="@null" />
+
         <TextView
             android:id="@+id/player1_score_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@null"
-            android:inputType="number"
             android:fontFamily="@font/pretendardbold"
             android:gravity="center"
             android:text="Score"
@@ -58,15 +62,45 @@
             android:textFontWeight="800"
             android:textSize="30dp"
             android:paddingBottom="5dp"
-            android:layout_gravity="center">
-        </TextView>
+            android:layout_gravity="center" />
+
+        <!-- 리더보드 표시 TextView -->
+        <TextView
+            android:id="@+id/leaderboard_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/pretendardbold"
+            android:gravity="center"
+            android:text="Top Scores:"
+            android:textColor="#222222"
+            android:textFontWeight="800"
+            android:textSize="40dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="30dp"
+            android:visibility="gone" /> <!-- 초기에는 숨김 -->
+
+        <!-- 리더보드 점수 리스트 -->
+        <TextView
+            android:id="@+id/leaderboard_scores"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/pretendardnormal"
+            android:gravity="center"
+            android:textColor="#222222"
+            android:textFontWeight="600"
+            android:textSize="20dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:visibility="gone" /> <!-- 초기에는 숨김 -->
+
+        <!-- "Play Again" 버튼 -->
         <Button
             android:id="@+id/playagain"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:layout_marginHorizontal="24dp"
-            android:layout_marginTop="130dp"
+            android:layout_marginTop="80dp"
             android:background="@drawable/radius_white"
             android:fontFamily="@font/pretendardnormal"
             android:gravity="center"
@@ -74,9 +108,10 @@
             android:text="PLAY AGAIN"
             android:textColor="#222222"
             android:textFontWeight="800"
-            android:textSize="20dp">
-        </Button>
+            android:textSize="20dp"
+            android:visibility="gone" /> <!-- 초기에는 숨김 -->
 
+        <!-- "Quit" 버튼 -->
         <Button
             android:id="@+id/quitButton"
             android:layout_width="match_parent"
@@ -91,8 +126,8 @@
             android:text="QUIT"
             android:textColor="#ffffff"
             android:textFontWeight="800"
-            android:textSize="20dp">
-        </Button>
+            android:textSize="20dp"
+            android:visibility="gone" /> <!-- 초기에는 숨김 -->
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

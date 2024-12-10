@@ -20,9 +20,9 @@ import androidx.core.view.WindowInsetsCompat;
 
 public class MainActivity extends AppCompatActivity {
     private ImageView imageView;
-    private LinearLayout modeLayout;  // 모드 선택 레이아웃
-    private View overlayBackground;   // 옅은 회색 배경 뷰
-    private TextView textViewStart;   // 시작 텍스트 뷰
+    private LinearLayout modeLayout; // 모드 선택 레이아웃
+    private View overlayBackground; // 옅은 회색 배경 뷰
+    private TextView textViewStart; // 시작 텍스트 뷰
     private TextView textViewStack;
 
     @Override
@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        textViewStack =findViewById(R.id.textViewStack);
+        textViewStack = findViewById(R.id.textViewStack);
         imageView = findViewById(R.id.imageView);
         textViewStart = findViewById(R.id.textViewStart);
         modeLayout = findViewById(R.id.mode_layout);
@@ -57,20 +57,20 @@ public class MainActivity extends AppCompatActivity {
         Button serverModeButton = findViewById(R.id.serverMode_button);
 
         singleModeButton.setOnClickListener(view -> {
-            Intent intent = new Intent(MainActivity.this, GameActivity.class);
-            intent.putExtra("MODE", "SINGLE");
+            Intent intent = new Intent(MainActivity.this, NicknameActivity.class);
+            intent.putExtra("MODE", 0); // SINGLE 모드
             startActivity(intent);
         });
 
         multiModeButton.setOnClickListener(view -> {
-            Intent intent = new Intent(MainActivity.this, GameActivity.class);
-            intent.putExtra("MODE", "MULTI");
+            Intent intent = new Intent(MainActivity.this, NicknameActivity.class);
+            intent.putExtra("MODE", 1); // MULTI 모드
             startActivity(intent);
         });
 
         serverModeButton.setOnClickListener(view -> {
-            Intent intent = new Intent(MainActivity.this, GameActivity.class);
-            intent.putExtra("MODE", "SERVER");
+            Intent intent = new Intent(MainActivity.this, NicknameActivity.class);
+            intent.putExtra("MODE", 2); // SERVER 모드
             startActivity(intent);
         });
 
@@ -81,8 +81,7 @@ public class MainActivity extends AppCompatActivity {
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        );
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
 
     @Override
@@ -120,11 +119,11 @@ public class MainActivity extends AppCompatActivity {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             textViewStack.setVisibility(View.GONE);
             imageView.setVisibility(View.GONE);
-            
+
             // 애니메이션 정지
             textViewStart.clearAnimation();
             textViewStart.setVisibility(View.GONE);
-            
+
             // 모드 선택
             overlayBackground.setVisibility(View.VISIBLE);
             modeLayout.setVisibility(View.VISIBLE);
