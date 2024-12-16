@@ -48,7 +48,9 @@ public class GameOverActivity extends AppCompatActivity {
             // 리더보드 업데이트 및 표시
             updateLeaderboard(player1Name, player1Score);
             updateLeaderboard(player2Name, player2Score);
-        } else {
+        }
+        // single 모드일 경우
+        else {
             setContentView(R.layout.activity_gameover_single);
 
             String player1Name = getIntent().getStringExtra("PLAYER1_NAME");
