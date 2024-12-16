@@ -35,15 +35,21 @@ public class GameActivity extends AppCompatActivity {
         Intent intent = getIntent();
         whichMode = intent.getIntExtra("MODE", 0);
 
-        if (whichMode == 0) {
-            setContentView(R.layout.activity_game_single);
-        } else if (whichMode == 1) {
-            setContentView(R.layout.activity_game_multi);
-            player2 = new Player(intent.getStringExtra("PLAYER2_NAME"));
-        } else if (whichMode == 2) {
-            setContentView(R.layout.activity_game_server);
-            player2 = new Player(intent.getStringExtra("PLAYER2_NAME"));
-            connectToServer(); // 서버 연결 로직 수행
+        switch (whichMode) {
+            case 0: // 싱글 모드
+                setContentView(R.layout.activity_game_single);
+                break;
+            case 1: // 멀티 모드
+                setContentView(R.layout.activity_game_multi);
+                player2 = new Player(intent.getStringExtra("PLAYER2_NAME"));
+                break;
+            case 2: // 서버 모드
+                setContentView(R.layout.activity_game_server);
+                player2 = new Player(intent.getStringExtra("PLAYER2_NAME"));
+                connectToServer(); // 서버 연결 로직 수행
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown mode");
         }
 
         // 플레이어 1 설정
@@ -55,16 +61,11 @@ public class GameActivity extends AppCompatActivity {
         player1GameView = new GameView(this, player1, player1ScoreView, out, null);
         player1Layout.addView(player1GameView);
 
-        if (whichMode == 1) {
+        if (whichMode == 1 || whichMode == 2) {
             EditText player2ScoreView = findViewById(R.id.player2_score);
             FrameLayout player2Layout = findViewById(R.id.player2);
-            player2GameView = new GameView(this, player2, player2ScoreView, out, null); // PrintWriter 전달
-            player2Layout.addView(player2GameView);
-        } else if (whichMode == 2) {
-            // 플레이어2 초기화
-            EditText player2ScoreView = findViewById(R.id.player2_score);
-            FrameLayout player2Layout = findViewById(R.id.player2);
-            player2GameView = new GameView(this, player2, player2ScoreView, out, clientId); // PrintWriter 전달
+            // 멀티 모드일 경우 client ID를 null로 반환하고 서버 모드일 경우 clientID를 반환
+            player2GameView = new GameView(this, player2, player2ScoreView, out, whichMode == 1 ? null : clientId);
             player2Layout.addView(player2GameView);
         }
 
@@ -119,7 +120,7 @@ public class GameActivity extends AppCompatActivity {
         // 승자와 각 플레이어의 점수를 가져옴
         intent.putExtra("WINNER", player1.getScore() > (player2 != null ? player2.getScore() : 0)
                 ? player1.getName()
-                : (player2 != null ? player2.getName() : "Player 1"));
+                : (player2 != null ? player2.getName() : player1.getName()));
         intent.putExtra("PLAYER1_NAME", player1.getName());
         intent.putExtra("PLAYER1_SCORE", player1.getScore());
 
@@ -152,69 +153,105 @@ public class GameActivity extends AppCompatActivity {
 
                 // 클라이언트 ID 생성 및 서버로 전송
                 String clientId = "Client_" + System.currentTimeMillis(); // 고유 ID 생성
-
-                // `GameView`에 `out`과 `clientId` 전달
-                runOnUiThread(() -> {
-                    if (player1GameView != null) {
-                        player1GameView.setOut(out);
-                        player1GameView.setClientId(clientId); // GameView에 clientId 전달
-                    }
-                    if (player2GameView != null) {
-                        player2GameView.setOut(out);
-                        player2GameView.setClientId(clientId); // GameView에 clientId 전달
-                    }
-                });
+                sendClientIdToGameView(clientId); // GameView에 클라이언트 ID 전달
 
                 // 서버로부터 메시지 수신 루프
-                while (in.hasNextLine()) {
-                    String message = in.nextLine();
-                    Log.d("GameActivity", "서버로부터 메시지 수신: " + message);
-
-                    if (message.equals("ID_REQUEST")) {
-                        // 서버에서 ID 요청 시 다시 전송
-                        out.println(clientId);
-                        Log.d("GameActivity", "서버로 클라이언트 ID 전송: " + clientId);
-                    } else if (message.equals("WAITING")) {
-                        // 대기 상태 표시
-                        runOnUiThread(() -> Toast.makeText(this, "상대방을 기다리는 중...", Toast.LENGTH_SHORT).show());
-                    } else if (message.equals("CONNECTED")) {
-                        // 매칭 완료 메시지 처
-                        runOnUiThread(() -> {
-                            isOpponentConnected = true;
-                            Toast.makeText(this, "상대방과 연결되었습니다!", Toast.LENGTH_SHORT).show();
-                        });
-                    } else if (message.contains(",")) {
-                        // 블록 정보 메시지 처리
-                        String[] parts = message.split(",");
-                        try {
-                            int receivedX = Integer.parseInt(parts[0]);
-                            int receivedColor = Integer.parseInt(parts[1]);
-
-                            // 상대방 블록을 UI에 반영
-                            runOnUiThread(() -> {
-                                if (player1GameView != null) {
-                                    player1GameView.addOpponentBlock(receivedX, receivedColor);
-                                }
-                            });
-                        } catch (NumberFormatException e) {
-                            Log.e("GameActivity", "잘못된 블록 데이터 형식: " + message, e);
-                        }
-                    }
-                }
+                listenToServerMessages(clientId); // 서버 메시지 처리 메서드 호출
             } catch (Exception e) {
                 Log.e("GameActivity", "서버 연결 실패", e);
-                runOnUiThread(() -> {
-                    Toast.makeText(this, "서버 연결 실패! 메인 화면으로 돌아갑니다.", Toast.LENGTH_SHORT).show();
-                    // MainActivity로 이동
-                    Intent intent = new Intent(GameActivity.this, MainActivity.class);
-                    startActivity(intent);
-                    // GameActivity 종료
-                    finish();
-                });
+                ServerConnectionFail(); // 서버 연결 실패 처리
             }
         }).start();
     }
 
+    // 클라이언트 ID를 GameView에 전달
+    private void sendClientIdToGameView(String clientId) {
+        runOnUiThread(() -> {
+            if (player1GameView != null) {
+                player1GameView.setOut(out);
+                player1GameView.setClientId(clientId); // GameView에 clientId 전달
+            }
+            if (player2GameView != null) {
+                player2GameView.setOut(out);
+                player2GameView.setClientId(clientId); // GameView에 clientId 전달
+            }
+        });
+    }
+
+    // 서버로부터 메시지 수신 및 처리
+    private void listenToServerMessages(String clientId) {
+        while (in.hasNextLine()) {
+            String message = in.nextLine();
+            Log.d("GameActivity", "서버로부터 메시지 수신: " + message);
+            handleServerMessage(message, clientId); // 메시지 처리 메서드 호출
+        }
+    }
+
+    // 서버에서 수신한 메시지 처리
+    private void handleServerMessage(String message, String clientId) {
+        if (message.equals("ID_REQUEST")) {
+            sendClientIdToServer(clientId); // 서버로 클라이언트 ID 전송
+        } else if (message.equals("WAITING")) {
+            showWaitingToast(); // 대기 상태 처리
+        } else if (message.equals("CONNECTED")) {
+            handleOpponentConnection(); // 상대방 연결 처리
+        } else if (message.contains(",")) {
+            processOpponentBlock(message); // 블록 정보 처리
+        }
+    }
+
+    // 클라이언트 ID를 서버로 전송
+    private void sendClientIdToServer(String clientId) {
+        out.println(clientId);
+        Log.d("GameActivity", "서버로 클라이언트 ID 전송: " + clientId);
+    }
+
+    // 대기 상태 표시
+    private void showWaitingToast() {
+        runOnUiThread(() -> Toast.makeText(this, "상대방을 기다리는 중...", Toast.LENGTH_SHORT).show());
+    }
+
+    // 상대방 연결 완료 처리
+    private void handleOpponentConnection() {
+        runOnUiThread(() -> {
+            isOpponentConnected = true;
+            Toast.makeText(this, "상대방과 연결되었습니다!", Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    // 상대방 블록 정보 처리
+    private void processOpponentBlock(String message) {
+        String[] parts = message.split(",");
+        try {
+            int receivedX = Integer.parseInt(parts[0]);
+            int receivedColor = Integer.parseInt(parts[1]);
+            updateOpponentBlockUI(receivedX, receivedColor); // UI 업데이트
+        } catch (NumberFormatException e) {
+            Log.e("GameActivity", "잘못된 블록 데이터 형식: " + message, e);
+        }
+    }
+
+    // 상대방 블록을 UI에 반영
+    private void updateOpponentBlockUI(int receivedX, int receivedColor) {
+        runOnUiThread(() -> {
+            if (player1GameView != null) {
+                player1GameView.addOpponentBlock(receivedX, receivedColor);
+            }
+        });
+    }
+
+    // 서버 연결 실패 시 처리
+    private void ServerConnectionFail() {
+        runOnUiThread(() -> {
+            Toast.makeText(this, "서버 연결 실패! 메인 화면으로 돌아갑니다.", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(GameActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish(); // GameActivity 종료
+        });
+    }
+
+    // 상대방과 연결 확인.
+    // 새로운 쓰레드를 생성한 이유: 상대방과 본인의 게임 정보를 서로에게 전송하고, 상대방과 연결이 되었는지 동시에 확인하기 위해
     private void checkOpponentConnection() {
         new Thread(() -> {
             try {
